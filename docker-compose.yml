@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+
+  db:
+    image: timescale/timescaledb:latest-pg12
+    container_name: db_timescale
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  backend:
+    build:
+      context: . # Use an image built from Dockerfile in current dir.
+      dockerfile: Dockerfile
+    ports: # forward port from container to host machine
+      - "8081:8081"
+    restart: unless-stopped
+    environment:
+      DB_PORT: 5432
+    networks: # services on the same network can communicate with each other using name
+      - backend
+    depends_on: # This service depends on db service. Start that first.
+      - db
