@@ -45,6 +45,7 @@ func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	pos.Timestamp, cor.Latitude, cor.Longitude, err = db.GetLatestLocation()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
 		return
 	}
 	pos.Coordinates = cor
@@ -52,6 +53,7 @@ func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	response, err = json.Marshal(pos)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		log.Fatal(err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
