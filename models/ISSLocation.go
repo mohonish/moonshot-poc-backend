@@ -5,5 +5,7 @@ import (
 )
 
 type ISSLocation struct {
-	timestamp	time.Time
+	Timestamp	time.Time	`json:"timestamp"`
+	Latitude	float64		`json:"latitude"`
+	Longitude	float64		`json:"longitude"`
 }

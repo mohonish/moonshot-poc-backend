@@ -1,11 +1,12 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v4"
+	"github.com/mohonish/moonshot-backend/db"
+	"github.com/mohonish/moonshot-backend/models"
 	"github.com/mohonish/moonshot-backend/version"
 	"log"
 	"net/http"
@@ -14,23 +15,14 @@ import (
 
 const contentTypeKey string = "Content-Type"
 const contentTypeVal string = "application/json"
-// const databaseURL string = "postgres://YourUserName:YourPassword@YourHost:5432/YourDatabase"
-const databaseURL string = "postgres://postgres:postgres@localhost:5432/iss_data"
 const port string = ":8081"
 
 func main() {
 	// Set CLI Flags
 	setCLIFlags()
 
-	// Connect to DB
-	conn, err := pgx.Connect(context.Background(), databaseURL)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
-	} else {
-		fmt.Fprintf(os.Stdout, "Connected to database\n")
-	}
-	defer conn.Close(context.Background())
+	// Setup DB and initiate data fetch
+	db.SetupDBFetch()
 
 	// Create mux base router
 	r := mux.NewRouter()
@@ -47,8 +39,22 @@ func main() {
 
 func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(contentTypeKey, contentTypeVal)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "get called"}`))
+	var data models.ISSLocation
+	var err error
+	data.Timestamp, data.Latitude, data.Longitude, err = db.GetLatestLocation()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	} else {
+		var response []byte
+		response, err = json.Marshal(data)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(response))
+	}
 }
 
 func routeNotFound(w http.ResponseWriter, r *http.Request) {
