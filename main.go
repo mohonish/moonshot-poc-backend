@@ -39,15 +39,17 @@ func main() {
 
 func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(contentTypeKey, contentTypeVal)
-	var data models.ISSLocation
+	var pos models.ISSLocation
+	var cor models.Coordinate
 	var err error
-	data.Timestamp, data.Latitude, data.Longitude, err = db.GetLatestLocation()
+	pos.Timestamp, cor.Latitude, cor.Longitude, err = db.GetLatestLocation()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else {
+		pos.Coordinates = cor
 		var response []byte
-		response, err = json.Marshal(data)
+		response, err = json.Marshal(pos)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
