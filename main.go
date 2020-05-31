@@ -46,17 +46,16 @@ func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	} else {
-		pos.Coordinates = cor
-		var response []byte
-		response, err = json.Marshal(pos)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(response))
 	}
+	pos.Coordinates = cor
+	var response []byte
+	response, err = json.Marshal(pos)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(response))
 }
 
 func routeNotFound(w http.ResponseWriter, r *http.Request) {
