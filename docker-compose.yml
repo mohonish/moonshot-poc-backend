@@ -12,6 +12,7 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    network_mode: bridge
 
   backend:
     build:
@@ -22,8 +23,4 @@ services:
     restart: unless-stopped
     depends_on: # This service depends on db service. Start that first.
       - db
-
-networks:
-  default:
-    external:
-      name: bridge
+    network_mode: bridge
