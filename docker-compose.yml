@@ -22,3 +22,8 @@ services:
     restart: unless-stopped
     depends_on: # This service depends on db service. Start that first.
       - db
+
+networks:
+  default:
+    external:
+      name: bridge
