@@ -13,8 +13,7 @@ import (
 	"log"
 )
 
-// const databaseURL string = "postgres://YourUserName:YourPassword@YourHost:5432/YourDatabase"
-const databaseURL string = "postgres://postgres:postgres@localhost:5432/iss_data"
+const databaseURL string = "postgres://postgres:postgres@db:5432/iss_data"
 
 // const getLatestSQLQuery string = "select * from location where time > now() - interval '10 minutes' order by time desc limit 1"
 const getLatestSQLQuery string = "select * from location order by time desc limit 1"

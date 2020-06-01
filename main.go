@@ -15,6 +15,8 @@ import (
 
 const contentTypeKey string = "Content-Type"
 const contentTypeVal string = "application/json"
+const corsHeaderKey string = "Access-Control-Allow-Origin"
+const corsHeaderVal string = "*" // unsafe.
 const port string = ":8081"
 
 func main() {
@@ -39,6 +41,7 @@ func main() {
 
 func baseRouteGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(contentTypeKey, contentTypeVal)
+	w.Header().Set(corsHeaderKey, corsHeaderVal)
 	var pos models.ISSLocation
 	var cor models.Coordinate
 	var err error

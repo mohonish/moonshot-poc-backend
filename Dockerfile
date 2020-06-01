@@ -1,40 +1,41 @@
-# Build Stage
-FROM mohonishc/moonshot-backend-starter:1.13 AS build-stage
+# Start from golang base image
+FROM golang:alpine as builder
 
-LABEL app="build-moonshot-backend"
-LABEL REPO="https://github.com/mohonish/moonshot-backend"
+# ENV GO111MODULE=on
 
-ENV PROJPATH=/go/src/github.com/mohonish/moonshot-backend
+# Add Maintainer info
+LABEL maintainer="Mohonish Chakraborty <mohonish.c@gmail.com>"
 
-# Because of https://github.com/docker/docker/issues/14914
-ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+# Install git.
+# Git is required for fetching the dependencies.
+RUN apk update && apk add --no-cache git
 
-ADD . /go/src/github.com/mohonish/moonshot-backend
-WORKDIR /go/src/github.com/mohonish/moonshot-backend
+# Set the current working directory inside the container 
+WORKDIR /app
 
-RUN make build-alpine
+# Copy go mod and sum files 
+COPY go.mod go.sum ./
 
-# Final Stage
-FROM mohonishc/moonshot-backend-starter
+# Download all dependencies. Dependencies will be cached if the go.mod and the go.sum files are not changed 
+RUN go mod download 
 
-ARG GIT_COMMIT
-ARG VERSION
-LABEL REPO="https://github.com/mohonish/moonshot-backend"
-LABEL GIT_COMMIT=$GIT_COMMIT
-LABEL VERSION=$VERSION
+# Copy the source from the current directory to the working Directory inside the container 
+COPY . .
 
-# Because of https://github.com/docker/docker/issues/14914
-ENV PATH=$PATH:/opt/moonshot-backend/bin
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-WORKDIR /opt/moonshot-backend/bin
+# Start a new stage from scratch
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
 
-COPY --from=build-stage /go/src/github.com/mohonish/moonshot-backend/bin/moonshot-backend /opt/moonshot-backend/bin/
-RUN chmod +x /opt/moonshot-backend/bin/moonshot-backend
+WORKDIR /root/
 
-# Create appuser
-RUN adduser -D -g '' moonshot-backend
-USER moonshot-backend
+# Copy the Pre-built binary file from the previous stage.
+COPY --from=builder /app/main .
 
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+# Expose port 8081 to the outside world
+EXPOSE 8081
 
-CMD ["/opt/moonshot-backend/bin/moonshot-backend"]
+#Command to run the executable
+CMD ["./main"]
