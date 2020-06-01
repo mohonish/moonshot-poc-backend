@@ -12,8 +12,6 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - backendnet
 
   backend:
     build:
@@ -24,9 +22,3 @@ services:
     restart: unless-stopped
     depends_on: # This service depends on db service. Start that first.
       - db
-    networks:
-      - backendnet
-
-networks:
-  backendnet:
-    driver: bridge
